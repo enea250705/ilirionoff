@@ -6,9 +6,9 @@ import { ThemeProvider } from '@/components/theme-provider';
 import './globals.css';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://chat.vercel.ai'),
-  title: 'Next.js Chatbot Template',
-  description: 'Next.js chatbot template using the AI SDK.',
+  metadataBase: new URL('https://ilirion.ai'),
+  title: 'Ilirion AI - Asistenti i parë Shqiptar i Inteligjencës Artificiale',
+  description: 'Ilirion AI është asistenti i parë shqiptar i inteligjencës artificiale, i krijuar nga Enea, për të ndihmuar shqiptarët me detyrat e tyre të përditshme.',
 };
 
 export const viewport = {

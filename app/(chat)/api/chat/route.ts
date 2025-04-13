@@ -52,42 +52,53 @@ export async function POST(request: Request) {
       return new Response('No user message found', { status: 400 });
     }
 
-    const chat = await getChatById({ id });
+    // Log model selection for debugging
+    console.log(`[CHAT] Using model: ${selectedChatModel}`);
 
-    if (!chat) {
-      const title = await generateTitleFromUserMessage({
-        message: userMessage,
-      });
+    try {
+      const chat = await getChatById({ id });
 
-      await saveChat({ id, userId: session.user.id, title });
-    } else {
-      if (chat.userId !== session.user.id) {
-        return new Response('Unauthorized', { status: 401 });
+      if (!chat) {
+        const title = await generateTitleFromUserMessage({
+          message: userMessage,
+        });
+
+        await saveChat({ id, userId: session.user.id, title });
+      } else {
+        if (chat.userId !== session.user.id) {
+          return new Response('Unauthorized', { status: 401 });
+        }
       }
+
+      await saveMessages({
+        messages: [
+          {
+            chatId: id,
+            id: userMessage.id,
+            role: 'user',
+            parts: userMessage.parts,
+            attachments: userMessage.experimental_attachments ?? [],
+            createdAt: new Date(),
+          },
+        ],
+      });
+    } catch (dbError) {
+      console.error('[CHAT] Database error:', dbError);
+      // Continue even if database operations fail
     }
 
-    await saveMessages({
-      messages: [
-        {
-          chatId: id,
-          id: userMessage.id,
-          role: 'user',
-          parts: userMessage.parts,
-          attachments: userMessage.experimental_attachments ?? [],
-          createdAt: new Date(),
-        },
-      ],
-    });
+    // Ensure we use a valid model
+    const modelToUse = selectedChatModel || 'chat-model';
 
     return createDataStreamResponse({
       execute: (dataStream) => {
         const result = streamText({
-          model: myProvider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel }),
+          model: myProvider.languageModel(modelToUse),
+          system: systemPrompt({ selectedChatModel: modelToUse }),
           messages,
           maxSteps: 5,
           experimental_activeTools:
-            selectedChatModel === 'chat-model-reasoning'
+            modelToUse === 'chat-model-reasoning'
               ? []
               : [
                   'getWeather',
@@ -137,8 +148,8 @@ export async function POST(request: Request) {
                     },
                   ],
                 });
-              } catch (_) {
-                console.error('Failed to save chat');
+              } catch (saveError) {
+                console.error('Failed to save chat:', saveError);
               }
             }
           },
@@ -154,12 +165,14 @@ export async function POST(request: Request) {
           sendReasoning: true,
         });
       },
-      onError: () => {
-        return 'Oops, an error occurred!';
+      onError: (error) => {
+        console.error('Chat API error:', error);
+        return 'Ndodhi një gabim. Ju lutemi provoni përsëri.';
       },
     });
   } catch (error) {
-    return new Response('An error occurred while processing your request!', {
+    console.error('Chat API exception:', error);
+    return new Response('Ndodhi një gabim gjatë përpunimit të kërkesës suaj!', {
       status: 404,
     });
   }

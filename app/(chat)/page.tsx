@@ -11,6 +11,7 @@ export default async function Page() {
   const cookieStore = await cookies();
   const modelIdFromCookie = cookieStore.get('chat-model');
 
+  // Use the default model (DeepSeek) if no cookie is set
   if (!modelIdFromCookie) {
     return (
       <>
@@ -27,13 +28,20 @@ export default async function Page() {
     );
   }
 
+  // If cookie exists but contains an old model ID not in the new list,
+  // default to the primary model
+  const validModelIds = ['chat-model', 'chat-model-reasoning', 'xai-model', 'groq-model', 'artifact-model'];
+  const selectedModel = validModelIds.includes(modelIdFromCookie.value) 
+    ? modelIdFromCookie.value 
+    : DEFAULT_CHAT_MODEL;
+
   return (
     <>
       <Chat
         key={id}
         id={id}
         initialMessages={[]}
-        selectedChatModel={modelIdFromCookie.value}
+        selectedChatModel={selectedModel}
         selectedVisibilityType="private"
         isReadonly={false}
       />

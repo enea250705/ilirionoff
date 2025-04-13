@@ -1,0 +1,10 @@
+{
+    "buildCommand": "npm run build",
+    "installCommand": "npm install",
+    "framework": "nextjs",
+    "env": {
+        "DEEPSEEK_API_KEY": "@deepseek_api_key",
+        "NEXTAUTH_URL": "@nextauth_url",
+        "NEXTAUTH_SECRET": "@nextauth_secret"
+    }
+}

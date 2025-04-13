@@ -9,12 +9,27 @@ interface ChatModel {
 export const chatModels: Array<ChatModel> = [
   {
     id: 'chat-model',
-    name: 'Chat model',
-    description: 'Primary model for all-purpose chat',
+    name: 'DeepSeek',
+    description: 'Modeli kryesor për bisedë të përgjithshme',
   },
   {
     id: 'chat-model-reasoning',
-    name: 'Reasoning model',
-    description: 'Uses advanced reasoning',
+    name: 'DeepSeek Reasoning',
+    description: 'Përdor arsyetim të avancuar',
+  },
+  {
+    id: 'xai-model',
+    name: 'Grok AI',
+    description: 'Model alternativ me aftësi të avancuara',
+  },
+  {
+    id: 'groq-model',
+    name: 'Llama 3',
+    description: 'Model i shpejtë dhe efikas',
+  },
+  {
+    id: 'artifact-model',
+    name: 'DeepSeek Coder',
+    description: 'I specializuar për programim dhe kod',
   },
 ];

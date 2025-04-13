@@ -30,67 +30,92 @@
         --card-foreground: 240 10% 3.9%;
         --popover: 0 0% 100%;
         --popover-foreground: 240 10% 3.9%;
-        --primary: 240 5.9% 10%;
+        --primary: 0 84.2% 45.1%;
+        /* Albanian Red */
         --primary-foreground: 0 0% 98%;
         --secondary: 240 4.8% 95.9%;
-        --secondary-foreground: 240 5.9% 10%;
+        --secondary-foreground: 0 0% 0%;
+        /* Black for text */
         --muted: 240 4.8% 95.9%;
         --muted-foreground: 240 3.8% 46.1%;
-        --accent: 240 4.8% 95.9%;
-        --accent-foreground: 240 5.9% 10%;
+        --accent: 0 84.2% 45.1%;
+        /* Albanian Red for accent */
+        --accent-foreground: 0 0% 98%;
         --destructive: 0 84.2% 60.2%;
         --destructive-foreground: 0 0% 98%;
         --border: 240 5.9% 90%;
         --input: 240 5.9% 90%;
-        --ring: 240 10% 3.9%;
-        --chart-1: 12 76% 61%;
-        --chart-2: 173 58% 39%;
-        --chart-3: 197 37% 24%;
-        --chart-4: 43 74% 66%;
-        --chart-5: 27 87% 67%;
+        --ring: 0 84.2% 45.1%;
+        /* Albanian Red for ring/focus */
+        --chart-1: 0 84.2% 45.1%;
+        /* Red */
+        --chart-2: 0 0% 0%;
+        /* Black */
+        --chart-3: 0 84.2% 60.2%;
+        /* Lighter Red */
+        --chart-4: 0 0% 20%;
+        /* Dark Gray */
+        --chart-5: 0 84.2% 35.1%;
+        /* Darker Red */
         --radius: 0.5rem;
-        --sidebar-background: 0 0% 98%;
-        --sidebar-foreground: 240 5.3% 26.1%;
-        --sidebar-primary: 240 5.9% 10%;
+        --sidebar-background: 0 0% 0%;
+        /* Black sidebar */
+        --sidebar-foreground: 0 0% 98%;
+        --sidebar-primary: 0 84.2% 45.1%;
+        /* Albanian Red */
         --sidebar-primary-foreground: 0 0% 98%;
-        --sidebar-accent: 240 4.8% 95.9%;
-        --sidebar-accent-foreground: 240 5.9% 10%;
-        --sidebar-border: 220 13% 91%;
-        --sidebar-ring: 217.2 91.2% 59.8%;
+        --sidebar-accent: 0 0% 10%;
+        --sidebar-accent-foreground: 0 0% 98%;
+        --sidebar-border: 0 0% 15%;
+        --sidebar-ring: 0 84.2% 45.1%;
+        /* Albanian Red */
     }
+
     .dark {
-        --background: 240 10% 3.9%;
+        --background: 0 0% 6%;
+        /* Near black background */
         --foreground: 0 0% 98%;
-        --card: 240 10% 3.9%;
+        --card: 0 0% 6%;
         --card-foreground: 0 0% 98%;
-        --popover: 240 10% 3.9%;
+        --popover: 0 0% 6%;
         --popover-foreground: 0 0% 98%;
-        --primary: 0 0% 98%;
-        --primary-foreground: 240 5.9% 10%;
-        --secondary: 240 3.7% 15.9%;
+        --primary: 0 84.2% 45.1%;
+        /* Albanian Red */
+        --primary-foreground: 0 0% 98%;
+        --secondary: 0 0% 15%;
         --secondary-foreground: 0 0% 98%;
-        --muted: 240 3.7% 15.9%;
-        --muted-foreground: 240 5% 64.9%;
-        --accent: 240 3.7% 15.9%;
+        --muted: 0 0% 15%;
+        --muted-foreground: 0 0% 64.9%;
+        --accent: 0 84.2% 45.1%;
+        /* Albanian Red */
         --accent-foreground: 0 0% 98%;
         --destructive: 0 62.8% 30.6%;
         --destructive-foreground: 0 0% 98%;
-        --border: 240 3.7% 15.9%;
-        --input: 240 3.7% 15.9%;
-        --ring: 240 4.9% 83.9%;
-        --chart-1: 220 70% 50%;
-        --chart-2: 160 60% 45%;
-        --chart-3: 30 80% 55%;
-        --chart-4: 280 65% 60%;
-        --chart-5: 340 75% 55%;
-        --sidebar-background: 240 5.9% 10%;
-        --sidebar-foreground: 240 4.8% 95.9%;
-        --sidebar-primary: 224.3 76.3% 48%;
+        --border: 0 0% 15%;
+        --input: 0 0% 15%;
+        --ring: 0 84.2% 45.1%;
+        /* Albanian Red */
+        --chart-1: 0 84.2% 45.1%;
+        /* Red */
+        --chart-2: 0 0% 98%;
+        /* White */
+        --chart-3: 0 84.2% 60.2%;
+        /* Lighter Red */
+        --chart-4: 0 0% 80%;
+        /* Light Gray */
+        --chart-5: 0 84.2% 35.1%;
+        /* Darker Red */
+        --sidebar-background: 0 0% 0%;
+        /* Pure black sidebar */
+        --sidebar-foreground: 0 0% 98%;
+        --sidebar-primary: 0 84.2% 45.1%;
+        /* Albanian Red */
         --sidebar-primary-foreground: 0 0% 100%;
-        --sidebar-accent: 240 3.7% 15.9%;
-        --sidebar-accent-foreground: 240 4.8% 95.9%;
-        --sidebar-border: 240 3.7% 15.9%;
-        --sidebar-ring: 217.2 91.2% 59.8%;
+        --sidebar-accent: 0 0% 15%;
+        --sidebar-accent-foreground: 0 0% 98%;
+        --sidebar-border: 0 0% 15%;
+        --sidebar-ring: 0 84.2% 45.1%;
+        /* Albanian Red */
     }
 }
 
@@ -132,7 +157,7 @@
     @apply bg-background dark:bg-zinc-800 outline-none selection:bg-zinc-900 !important;
 }
 
-.ͼo.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground,
+.ͼo.cm-focused>.cm-scroller>.cm-selectionLayer .cm-selectionBackground,
 .ͼo.cm-selectionBackground,
 .ͼo.cm-content::selection {
     @apply bg-zinc-200 dark:bg-zinc-900 !important;

@@ -23,16 +23,59 @@ import { ArtifactKind } from '@/components/artifact';
 // use the Drizzle adapter for Auth.js / NextAuth
 // https://authjs.dev/reference/adapter/drizzle
 
-// biome-ignore lint: Forbidden non-null assertion.
-const client = postgres(process.env.POSTGRES_URL!);
-const db = drizzle(client);
+// Create a mock database for local development when no DB connection is available
+let db: any;
+
+try {
+  // Only attempt to connect to the database if the URL is provided
+  if (process.env.POSTGRES_URL) {
+    const client = postgres(process.env.POSTGRES_URL);
+    db = drizzle(client);
+    console.log("Database connection established");
+  } else {
+    console.log("No database URL provided, using mock database");
+    // Create a mock db with no-op functions for testing
+    db = {
+      select: () => ({ from: () => ({ where: () => [], orderBy: () => [], limit: () => [] }) }),
+      insert: () => ({ values: () => [] }),
+      delete: () => ({ where: () => [] }),
+    };
+  }
+} catch (error) {
+  console.error("Failed to connect to database:", error);
+  // Create a mock db with no-op functions for testing
+  db = {
+    select: () => ({ from: () => ({ where: () => [], orderBy: () => [], limit: () => [] }) }),
+    insert: () => ({ values: () => [] }),
+    delete: () => ({ where: () => [] }),
+  };
+}
+
+// In-memory database for local development
+const inMemoryDb = {
+  users: new Map<string, User>(),
+  chats: new Map<string, Chat>(),
+  messages: new Map<string, DBMessage[]>(),
+  votes: new Map<string, any[]>(),
+  documents: new Map<string, any[]>(),
+  suggestions: new Map<string, any[]>(),
+};
 
 export async function getUser(email: string): Promise<Array<User>> {
   try {
+    // First check in-memory data
+    for (const user of inMemoryDb.users.values()) {
+      if (user.email === email) {
+        return [user];
+      }
+    }
+    
+    // Then try the database
     return await db.select().from(user).where(eq(user.email, email));
   } catch (error) {
     console.error('Failed to get user from database');
-    throw error;
+    // Return empty array instead of throwing
+    return [];
   }
 }
 
@@ -41,7 +84,22 @@ export async function createUser(email: string, password: string) {
   const hash = hashSync(password, salt);
 
   try {
-    return await db.insert(user).values({ email, password: hash });
+    // Store in in-memory database
+    const newUser = {
+      id: `user_${Date.now()}`,
+      email,
+      password: hash
+    };
+    inMemoryDb.users.set(newUser.id, newUser);
+    
+    // Also try to store in the regular database
+    try {
+      await db.insert(user).values({ email, password: hash });
+    } catch (dbError) {
+      console.log("Could not save to database, but user was created in memory");
+    }
+    
+    return newUser;
   } catch (error) {
     console.error('Failed to create user in database');
     throw error;
@@ -58,12 +116,30 @@ export async function saveChat({
   title: string;
 }) {
   try {
-    return await db.insert(chat).values({
+    // Create chat in memory
+    const newChat = {
       id,
-      createdAt: new Date(),
       userId,
       title,
-    });
+      createdAt: new Date(),
+      visibility: 'private' as const,
+    };
+    inMemoryDb.chats.set(id, newChat);
+    console.log(`Created chat in memory: ${id}`);
+    
+    // Also try to store in the database
+    try {
+      await db.insert(chat).values({
+        id,
+        createdAt: new Date(),
+        userId,
+        title,
+      });
+    } catch (dbError) {
+      console.log("Could not save chat to database, but it was created in memory");
+    }
+    
+    return newChat;
   } catch (error) {
     console.error('Failed to save chat in database');
     throw error;
@@ -94,59 +170,107 @@ export async function getChatsByUserId({
   endingBefore: string | null;
 }) {
   try {
-    const extendedLimit = limit + 1;
-
-    const query = (whereCondition?: SQL<any>) =>
-      db
-        .select()
-        .from(chat)
-        .where(
-          whereCondition
-            ? and(whereCondition, eq(chat.userId, id))
-            : eq(chat.userId, id),
-        )
-        .orderBy(desc(chat.createdAt))
-        .limit(extendedLimit);
-
-    let filteredChats: Array<Chat> = [];
-
-    if (startingAfter) {
-      const [selectedChat] = await db
-        .select()
-        .from(chat)
-        .where(eq(chat.id, startingAfter))
-        .limit(1);
-
-      if (!selectedChat) {
-        throw new Error(`Chat with id ${startingAfter} not found`);
+    // First try in-memory data
+    const userChats = Array.from(inMemoryDb.chats.values())
+      .filter(chat => chat.userId === id)
+      .sort((a, b) => {
+        // Sort by created date descending
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+    
+    if (userChats.length > 0) {
+      const extendedLimit = limit + 1;
+      let filteredChats = [];
+      
+      if (startingAfter) {
+        const startIndex = userChats.findIndex(chat => chat.id === startingAfter);
+        if (startIndex !== -1) {
+          filteredChats = userChats.slice(startIndex + 1, startIndex + 1 + extendedLimit);
+        }
+      } else if (endingBefore) {
+        const endIndex = userChats.findIndex(chat => chat.id === endingBefore);
+        if (endIndex !== -1) {
+          filteredChats = userChats.slice(Math.max(0, endIndex - extendedLimit), endIndex);
+        }
+      } else {
+        filteredChats = userChats.slice(0, extendedLimit);
       }
-
-      filteredChats = await query(gt(chat.createdAt, selectedChat.createdAt));
-    } else if (endingBefore) {
-      const [selectedChat] = await db
-        .select()
-        .from(chat)
-        .where(eq(chat.id, endingBefore))
-        .limit(1);
-
-      if (!selectedChat) {
-        throw new Error(`Chat with id ${endingBefore} not found`);
-      }
-
-      filteredChats = await query(lt(chat.createdAt, selectedChat.createdAt));
-    } else {
-      filteredChats = await query();
+      
+      const hasMore = filteredChats.length > limit;
+      
+      return {
+        chats: hasMore ? filteredChats.slice(0, limit) : filteredChats,
+        hasMore,
+      };
     }
+    
+    // If no in-memory data, try database
+    try {
+      const extendedLimit = limit + 1;
 
-    const hasMore = filteredChats.length > limit;
+      const query = (whereCondition?: SQL<any>) =>
+        db
+          .select()
+          .from(chat)
+          .where(
+            whereCondition
+              ? and(whereCondition, eq(chat.userId, id))
+              : eq(chat.userId, id),
+          )
+          .orderBy(desc(chat.createdAt))
+          .limit(extendedLimit);
 
-    return {
-      chats: hasMore ? filteredChats.slice(0, limit) : filteredChats,
-      hasMore,
-    };
+      let filteredChats: Array<Chat> = [];
+
+      if (startingAfter) {
+        const [selectedChat] = await db
+          .select()
+          .from(chat)
+          .where(eq(chat.id, startingAfter))
+          .limit(1);
+
+        if (!selectedChat) {
+          throw new Error(`Chat with id ${startingAfter} not found`);
+        }
+
+        filteredChats = await query(gt(chat.createdAt, selectedChat.createdAt));
+      } else if (endingBefore) {
+        const [selectedChat] = await db
+          .select()
+          .from(chat)
+          .where(eq(chat.id, endingBefore))
+          .limit(1);
+
+        if (!selectedChat) {
+          throw new Error(`Chat with id ${endingBefore} not found`);
+        }
+
+        filteredChats = await query(lt(chat.createdAt, selectedChat.createdAt));
+      } else {
+        filteredChats = await query();
+      }
+
+      const hasMore = filteredChats.length > limit;
+
+      return {
+        chats: hasMore ? filteredChats.slice(0, limit) : filteredChats,
+        hasMore,
+      };
+    } catch (dbError) {
+      console.log("Database error in getChatsByUserId, using empty chats list:", dbError);
+      // Return empty chats if database fails
+      return {
+        chats: [],
+        hasMore: false,
+      };
+    }
   } catch (error) {
-    console.error('Failed to get chats by user from database');
-    throw error;
+    console.error('Failed to get chats by user from database', error);
+    // Return empty chats instead of throwing
+    return {
+      chats: [],
+      hasMore: false,
+    };
   }
 }
 
@@ -166,23 +290,65 @@ export async function saveMessages({
   messages: Array<DBMessage>;
 }) {
   try {
-    return await db.insert(message).values(messages);
+    // Store messages in memory
+    for (const msg of messages) {
+      if (!inMemoryDb.messages.has(msg.chatId)) {
+        inMemoryDb.messages.set(msg.chatId, []);
+      }
+      
+      // Check for duplicates
+      const existingMsgIndex = inMemoryDb.messages.get(msg.chatId)!.findIndex(m => m.id === msg.id);
+      if (existingMsgIndex >= 0) {
+        // Replace existing message
+        inMemoryDb.messages.get(msg.chatId)![existingMsgIndex] = msg;
+      } else {
+        // Add new message
+        inMemoryDb.messages.get(msg.chatId)!.push(msg);
+      }
+    }
+    
+    console.log(`Saved ${messages.length} messages in memory`);
+    
+    // Also try to store in the database
+    try {
+      return await db.insert(message).values(messages);
+    } catch (dbError) {
+      console.log("Could not save messages to database, but they were saved in memory");
+      return null;
+    }
   } catch (error) {
     console.error('Failed to save messages in database', error);
-    throw error;
+    return null;
   }
 }
 
 export async function getMessagesByChatId({ id }: { id: string }) {
   try {
-    return await db
-      .select()
-      .from(message)
-      .where(eq(message.chatId, id))
-      .orderBy(asc(message.createdAt));
+    // First try to get messages from memory
+    if (inMemoryDb.messages.has(id)) {
+      const messages = inMemoryDb.messages.get(id) || [];
+      
+      // Sort messages by creation time
+      return messages.sort((a, b) => {
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      });
+    }
+    
+    // If not in memory, try the database
+    try {
+      return await db
+        .select()
+        .from(message)
+        .where(eq(message.chatId, id))
+        .orderBy(asc(message.createdAt));
+    } catch (dbError) {
+      console.log("Could not get messages from database, returning empty array");
+      return [];
+    }
   } catch (error) {
     console.error('Failed to get messages by chat id from database', error);
-    throw error;
+    // Return empty array instead of throwing
+    return [];
   }
 }
 
