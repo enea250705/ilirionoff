@@ -35,7 +35,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
               className="flex flex-row gap-3 items-center"
             >
               <span className="text-lg font-semibold px-2 hover:bg-muted rounded-md cursor-pointer">
-                Chatbot
+                Ilirion AI
               </span>
             </Link>
             <Tooltip>
@@ -53,15 +53,23 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                   <PlusIcon />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent align="end">New Chat</TooltipContent>
+              <TooltipContent align="end">Bisedë e Re</TooltipContent>
             </Tooltip>
           </div>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
+        <h2 className="text-md font-medium mb-2 px-2">Bisedat e Mia</h2>
         <SidebarHistory user={user} />
       </SidebarContent>
-      <SidebarFooter>{user && <SidebarUserNav user={user} />}</SidebarFooter>
+      <SidebarFooter>
+        {user && <SidebarUserNav user={user} />}
+        <div className="px-3 pb-3 pt-0">
+          <p className="text-xs text-muted-foreground">
+            Ilirion AI - Asistenti i parë artificial inteligjent shqiptar
+          </p>
+        </div>
+      </SidebarFooter>
     </Sidebar>
   );
 }
