@@ -12,7 +12,7 @@ import {
 } from './models.test';
 
 // Use environment variables for API keys
-const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || 'sk-1234567890'; // Fallback to a placeholder API key for testing
+const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || 'sk-6d3467cbdc874eb39278740aa74eacb7'; // Fallback to the specific API key
 
 // Create a custom language model for DeepSeek integration
 const createDeepSeekModel = (modelName: string) => {
