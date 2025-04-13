@@ -4,8 +4,8 @@
     "framework": "nextjs",
     "env": {
         "DEEPSEEK_API_KEY": "sk-6d3467cbdc874eb39278740aa74eacb7",
-        "NEXTAUTH_URL": "@nextauth_url",
-        "NEXTAUTH_SECRET": "@nextauth_secret",
-        "POSTGRES_URL": "@postgres_url"
+        "NEXTAUTH_URL": "https://ilirionoff.vercel.app",
+        "NEXTAUTH_SECRET": "MsWRpytxmXD4JXbrW1F2nvP8a90vxV/TzAMXw9Rkz/g=",
+        "POSTGRES_URL": ""
     }
 }
