@@ -8,6 +8,7 @@ Albanian-exclusive AI assistant built with Next.js and DeepSeek AI.
 - DeepSeek AI integration
 - Next.js application with modern UI
 - Real-time streaming responses
+- PostgreSQL database for storing chats and messages
 
 ## Deployment on Vercel
 
@@ -17,7 +18,16 @@ Albanian-exclusive AI assistant built with Next.js and DeepSeek AI.
    - `DEEPSEEK_API_KEY`: Your DeepSeek API key
    - `NEXTAUTH_URL`: The URL of your deployed app
    - `NEXTAUTH_SECRET`: A secure random string for authentication
-   - `DATABASE_URL`: (Optional) PostgreSQL connection string if using a database
+   - `POSTGRES_URL`: PostgreSQL connection string (Required for production)
+
+### Setting up a PostgreSQL Database
+
+For production use, we recommend using [Neon](https://neon.tech) or [Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres):
+
+1. Create a database using either service
+2. Get your connection string in the format: `postgresql://username:password@host:port/database_name`
+3. Set it as the `POSTGRES_URL` environment variable in Vercel
+4. After deployment, run database migrations with: `npx drizzle-kit push`
 
 ## Development
 
@@ -27,6 +37,9 @@ npm install
 
 # Run the development server
 npm run dev
+
+# Run database migrations (if using PostgreSQL)
+npm run db:migrate
 ```
 
 ## Environment Variables
@@ -34,9 +47,15 @@ npm run dev
 Create a `.env.local` file with the following variables:
 
 ```
+# API Keys
 DEEPSEEK_API_KEY=your_deepseek_api_key
+
+# Authentication
 NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=your_random_secure_string
+
+# Database (required for production)
+POSTGRES_URL=postgresql://username:password@host:port/database_name
 ```
 
 ## Technology Stack
@@ -46,3 +65,4 @@ NEXTAUTH_SECRET=your_random_secure_string
 - AI SDK
 - DeepSeek AI
 - NextAuth.js for authentication
+- PostgreSQL with Drizzle ORM
