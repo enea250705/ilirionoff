@@ -3,7 +3,7 @@
     "installCommand": "npm install",
     "framework": "nextjs",
     "env": {
-        "DEEPSEEK_API_KEY": "@deepseek_api_key",
+        "DEEPSEEK_API_KEY": "sk-6d3467cbdc874eb39278740aa74eacb7",
         "NEXTAUTH_URL": "@nextauth_url",
         "NEXTAUTH_SECRET": "@nextauth_secret",
         "POSTGRES_URL": "@postgres_url"
